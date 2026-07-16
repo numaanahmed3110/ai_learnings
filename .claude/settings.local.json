@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:roadmap.sh)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:developers.openai.com)"
+    ]
+  }
+}

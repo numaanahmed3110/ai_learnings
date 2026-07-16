@@ -1,0 +1,80 @@
+<title>Field Card · The AI Landscape</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/lesson.css">
+
+<div class="wrap">
+  <p class="kicker">Field Card <span class="dot">·</span> Reference <span class="dot">·</span> The AI Landscape</p>
+  <h1>The AI Landscape</h1>
+  <p class="lede">A one-page map for placing any AI term, technology, or job title. Keep it beside you; it stays true across the whole roadmap.</p>
+
+  <hr class="rule">
+
+  <h2><span class="num">1</span>The nesting</h2>
+  <p>These four are <strong>Russian dolls</strong>, not rivals. Each sits <em>inside</em> the one before it.</p>
+
+  <div class="nest">
+    <span class="layer-name">ARTIFICIAL INTELLIGENCE — machines doing tasks that seem to need human intellect</span>
+    <div class="inner">
+      <span class="layer-name">MACHINE LEARNING — systems that learn patterns from data</span>
+      <div class="inner">
+        <span class="layer-name">DEEP LEARNING — multi-layer neural networks that learn features on their own</span>
+        <div class="inner">
+          <span class="core">GENERATIVE AI / LLMs — models that generate new text, images, audio, code</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Layer</th><th>One-line definition</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>AI</td><td>Any technique that makes a machine act "intelligently."</td><td>A chess engine; a spam filter</td></tr>
+      <tr><td>Machine Learning</td><td>AI that <em>learns</em> from data instead of being hand-coded with rules.</td><td>Predicting house prices from past sales</td></tr>
+      <tr><td>Deep Learning</td><td>ML using many-layered neural networks that discover features themselves.</td><td>Image recognition; speech-to-text</td></tr>
+      <tr><td>Generative AI</td><td>Deep learning (usually transformers) that <em>produces</em> new content.</td><td>ChatGPT, Claude, Midjourney</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">2</span>Two neighbours that are <em>not</em> layers</h2>
+  <ul>
+    <li><strong>Data Science</strong> — extracting insight and answers from data (stats, visualisation, some ML). Overlaps ML but aims at <em>understanding</em>, not shipping a product.</li>
+    <li><strong>Data Engineering</strong> — building the pipelines, storage, and infrastructure that <em>feed</em> data to everything above. Plumbing, not modelling.</li>
+  </ul>
+
+  <h2><span class="num">3</span>Levels of AI</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Level</th><th>Meaning</th><th>Status today</th></tr></thead>
+    <tbody>
+      <tr><td>Narrow (ANI)</td><td>Good at one task or a narrow band of tasks.</td><td>Everything that exists — including today's LLMs</td></tr>
+      <tr><td>General (AGI)</td><td>Human-level competence across <em>any</em> task.</td><td>Hypothetical; not achieved</td></tr>
+      <tr><td>Super (ASI)</td><td>Beyond the best humans at essentially everything.</td><td>Speculative</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="sources"><em>"Generative" is a <strong>capability</strong>, not a level. A generative model can still be narrow — and today's are.</em></p>
+
+  <h2><span class="num">4</span>The three jobs</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Role</th><th>Core work</th><th>Math load</th><th>Builds…</th></tr></thead>
+    <tbody>
+      <tr><td>AI Engineer <span style="color:var(--accent)">← you</span></td><td>Build products on top of <em>existing</em>, pretrained models.</td><td>Light</td><td>Apps: prompting, RAG, agents, APIs</td></tr>
+      <tr><td>ML Engineer</td><td>Train, deploy, and optimise <em>custom</em> ML models.</td><td>Medium–heavy</td><td>Models + pipelines (MLOps)</td></tr>
+      <tr><td>AI Researcher</td><td>Invent <em>new</em> models, architectures, and methods.</td><td>Heavy</td><td>New knowledge (papers)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">5</span>The AI lifecycle (any project)</h2>
+  <p style="font-family:var(--mono);font-size:var(--t-small)">
+    problem → data → <em>pick or train</em> a model → evaluate → deploy → monitor &amp; iterate
+  </p>
+  <p class="sources">As an AI Engineer you usually <strong>pick</strong> a pretrained model rather than train one — so your time goes into everything <em>around</em> the model.</p>
+
+  <hr class="rule">
+  <p class="sources">Companion to <a href="../lessons/0001-the-ai-landscape.html">Lesson 01 — The AI Landscape</a>. Terminology follows the workspace <a href="../GLOSSARY.md">glossary</a>.</p>
+</div>
