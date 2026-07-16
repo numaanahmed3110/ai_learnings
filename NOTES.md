@@ -19,6 +19,16 @@
 - Every lesson ends with: a retrieval check, a recommended primary source, and a
   nudge to ask the teacher (me) followup questions.
 
+## Hosting / deployment
+- Repo: `github.com/numaanahmed3110/ai_learnings` — **PUBLIC**, on branch `main`.
+- Deploy: **Vercel**, static site, Root Directory `./` (repo root). Auto-deploys
+  on every push to `main`.
+- `.vercelignore` keeps personal files (`NOTES.md`, `learning-records/`,
+  `.claude/`) off the deployed public site.
+- **Guardrail:** the repo is public — never commit secrets or personal data.
+  User's email was redacted from tracked files (2026-07-16); by their choice it
+  remains in old commit history (not scrubbed).
+
 ## Open questions to resolve later
 - Preferred programming language for hands-on lessons (Python is the default for
   AI engineering; JS/TS also viable). Ask when we reach the first coding/API
