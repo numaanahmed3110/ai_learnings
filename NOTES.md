@@ -1,7 +1,7 @@
 # Teaching Notes
 
 ## Learner
-- Contact: numaan@surviant.in
+- Contact: _(kept private — not stored in this public repo)_
 - Goal: **AI Engineer** — build & ship LLM apps. See [MISSION.md](./MISSION.md).
 - Background: *"some coding"* — can write scripts / small apps, not an expert.
   Keep code approachable; explain, don't assume.
