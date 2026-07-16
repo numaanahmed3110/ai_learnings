@@ -1,0 +1,13 @@
+# Internal teaching-workspace files — kept OUT of the deployed public site.
+# (They stay in your Git repo for backup; they just aren't served on the web.)
+
+.claude/
+learning-records/
+NOTES.md
+skills-lock.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
