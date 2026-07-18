@@ -1,0 +1,115 @@
+/* ===================================================================
+   AI Engineer — reusable diagram components
+   Self-contained (no CDN), theme-aware (uses lesson.css tokens),
+   responsive, and print-friendly. Load AFTER lesson.css.
+   =================================================================== */
+
+/* ---- Figure frame + caption -------------------------------------- */
+.figure { margin: 2rem 0; }
+.fig-cap {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--muted);
+  text-align: center;
+  margin-top: .8rem;
+  text-wrap: balance;
+}
+
+/* ---- Vertical flow / pipeline ------------------------------------ */
+.flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+.flow-step {
+  border: 1px solid var(--hairline-2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: .85rem 1rem;
+  box-shadow: var(--shadow);
+}
+.flow-step .st-head { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+.st-badge {
+  font-family: var(--mono); font-size: .64rem; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--muted);
+  border: 1px solid var(--hairline-2); border-radius: 20px; padding: .12em .6em;
+  white-space: nowrap;
+}
+.flow-step .st-title { font-weight: 700; }
+.flow-step .st-body { font-size: var(--t-small); color: var(--ink-soft); margin: .4rem 0 0; }
+.flow-step.accent { border-color: var(--accent); background: var(--accent-tint); }
+.flow-step.accent .st-badge { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.flow-step.output {
+  border-style: dashed; background: var(--note-tint); border-color: var(--note);
+  box-shadow: none;
+}
+.flow-step.output .st-badge { color: var(--note); border-color: color-mix(in srgb, var(--note) 40%, transparent); }
+
+.flow-arrow {
+  align-self: center; color: var(--muted); font-size: 1.15rem; line-height: 1;
+  padding: .4rem 0;
+}
+.flow-arrow::before { content: "↓"; }
+.flow-arrow[data-label]::after {
+  content: attr(data-label);
+  font-family: var(--mono); font-size: .64rem; color: var(--muted);
+  margin-left: .5rem; text-transform: uppercase; letter-spacing: .06em;
+}
+
+/* data-in / result-out chips inside a step */
+.io-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .55rem; }
+.io-chip {
+  font-family: var(--mono); font-size: .68rem;
+  padding: .18em .55em; border-radius: 4px;
+  background: var(--paper); border: 1px solid var(--hairline); color: var(--muted);
+}
+.io-chip b { color: var(--ink-soft); font-weight: 700; }
+
+/* ---- Two-column comparison --------------------------------------- */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.6rem 0; }
+.compare > div {
+  border: 1px solid var(--hairline); border-radius: var(--radius);
+  padding: 1rem 1.1rem; background: var(--surface);
+}
+.compare h4 {
+  margin: 0 0 .55rem; font-family: var(--mono); font-size: var(--t-small);
+  text-transform: uppercase; letter-spacing: .06em; color: var(--accent-2);
+}
+.compare ul { margin: 0; padding-left: 1.1rem; font-size: var(--t-small); }
+@media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
+
+/* ---- Keyword / buzzword list ------------------------------------- */
+.keywords { display: flex; flex-direction: column; gap: .6rem; margin: 1.3rem 0; }
+.keywords .kw { border-left: 3px solid var(--accent); padding: .1rem 0 .1rem .85rem; }
+.keywords .kw b { font-family: var(--mono); font-size: .9em; color: var(--ink); }
+.keywords .kw span { color: var(--ink-soft); }
+
+/* ---- Formula card (light-math treatment) ------------------------- */
+.formula {
+  border: 1px solid var(--hairline); border-left: 3px solid var(--note);
+  background: var(--note-tint); border-radius: var(--radius);
+  padding: .9rem 1.1rem; margin: 1.4rem 0;
+}
+.formula .expr {
+  font-family: var(--mono); font-size: 1.05rem; color: var(--ink);
+  text-align: center; margin: .3rem 0 .6rem; overflow-x: auto;
+}
+.formula .gloss { font-size: var(--t-small); color: var(--ink-soft); margin: 0; }
+.formula .label {
+  font-family: var(--mono); font-size: var(--t-kicker); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--note); display: block; margin-bottom: .3rem;
+}
+
+/* ---- Inline SVG theming (curves, graphs, boxes) ------------------ */
+.svg-dgm { width: 100%; height: auto; display: block; }
+.svg-dgm .axis  { stroke: var(--hairline-2); stroke-width: 1; }
+.svg-dgm .grid  { stroke: var(--hairline); stroke-width: 1; }
+.svg-dgm .curve { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+.svg-dgm .band  { fill: color-mix(in srgb, var(--accent) 16%, transparent); stroke: none; }
+.svg-dgm .box   { fill: var(--surface); stroke: var(--hairline-2); stroke-width: 1.5; }
+.svg-dgm .box-accent { fill: var(--accent-tint); stroke: var(--accent); stroke-width: 1.5; }
+.svg-dgm .txt   { fill: var(--ink); font-family: var(--mono); font-size: 12px; }
+.svg-dgm .txt-mut { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.svg-dgm .flowline { stroke: var(--muted); stroke-width: 2; fill: none; }
+
+/* ---- Print ------------------------------------------------------- */
+@media print {
+  .flow-step, .compare > div, .formula { box-shadow: none; break-inside: avoid; }
+  .figure { break-inside: avoid; }
+}

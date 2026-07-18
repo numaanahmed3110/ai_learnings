@@ -18,9 +18,12 @@ working products, not researching or inventing new ones.
 
 ## Constraints
 - ~2–3 hours available per day — can move at a good pace.
-- Comfortable with *some* coding, but not an expert — keep code approachable.
-- **Minimal appetite for math.** Teach math only as light intuition, never
-  derivations. Skip depth.
+- **CS engineering student** with *some* coding — keep code approachable; CS
+  analogies land well.
+- **Math stays light.** A formula may appear *with* a plain-English "what it means
+  / why & where it's used" + an analogy — but no derivations or proofs.
+- **Depth everywhere else.** Each subtopic taught to a concrete understanding —
+  keywords, how it works, examples, mental models — supported by diagrams.
 - Learning follows `AI_Learning_Roadmap.md` (8 phases), but weighted toward the
   AI-Engineer destination (Phases 7–8).
 

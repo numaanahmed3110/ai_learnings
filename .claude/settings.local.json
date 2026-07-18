@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:roadmap.sh)",
       "WebFetch(domain:developers.google.com)",
-      "WebFetch(domain:developers.openai.com)"
+      "WebFetch(domain:developers.openai.com)",
+      "PowerShell(git push origin main 2>&1; Write-Output \"push-exit: $LASTEXITCODE\")"
     ]
   }
 }

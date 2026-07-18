@@ -1,0 +1,345 @@
+<title>Lesson 05 · Training, Fine-tuning & RLHF</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/lesson.css">
+<link rel="stylesheet" href="../assets/diagrams.css">
+
+<div class="wrap">
+
+  <p class="kicker">AI Engineer <span class="dot">·</span> Phase 2 <span class="dot">·</span> Lesson 05</p>
+  <h1>From Raw Predictor to Helpful Assistant</h1>
+  <p class="lede">In Lesson 02 we said the assistant you chat with is a "tamed"
+  next-token predictor. This lesson opens that box. You'll see the exact three-stage
+  pipeline that turns a pile of internet text into Claude or ChatGPT — and why each
+  stage exists.</p>
+
+  <div class="callout win">
+    <span class="label">Your win</span>
+    <p>You'll be able to walk through the whole training pipeline —
+    <strong>pre-training → supervised fine-tuning → RLHF</strong> — explaining
+    what each stage feeds in, what it produces, and every buzzword you'll hear
+    (foundation model, SFT, reward model, PPO, DPO, alignment). You'll also
+    understand <em>why</em> models are simultaneously so knowledgeable and so
+    confidently wrong.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">1</span>The big picture: three stages</h2>
+  <p>A production LLM isn't trained in one shot. It's built up in <strong>three
+  distinct stages</strong>, each solving a problem the previous one couldn't. Here's
+  the whole map before we zoom into each box — keep coming back to this diagram.</p>
+
+  <figure class="figure">
+    <div class="flow">
+      <div class="flow-step">
+        <div class="st-head"><span class="st-badge">Stage 1</span><span class="st-title">Pre-training</span></div>
+        <p class="st-body">Read a huge slice of the internet and just predict the next token, billions of times.</p>
+        <div class="io-row">
+          <span class="io-chip"><b>in:</b> ~trillions of tokens of raw text</span>
+          <span class="io-chip"><b>cost:</b> months · thousands of GPUs · $millions</span>
+        </div>
+      </div>
+      <div class="flow-arrow" data-label="produces"></div>
+      <div class="flow-step output">
+        <div class="st-head"><span class="st-badge">Output</span><span class="st-title">Base (foundation) model</span></div>
+        <p class="st-body">Knows language, facts, code, reasoning patterns — but only <em>autocompletes</em>. It won't reliably follow instructions.</p>
+      </div>
+      <div class="flow-arrow" data-label="then"></div>
+      <div class="flow-step">
+        <div class="st-head"><span class="st-badge">Stage 2</span><span class="st-title">Supervised fine-tuning (SFT)</span></div>
+        <p class="st-body">Keep training, now on a smaller set of human-written <em>(instruction → ideal answer)</em> examples.</p>
+        <div class="io-row">
+          <span class="io-chip"><b>in:</b> ~thousands–millions of curated demos</span>
+        </div>
+      </div>
+      <div class="flow-arrow" data-label="produces"></div>
+      <div class="flow-step output">
+        <div class="st-head"><span class="st-badge">Output</span><span class="st-title">Instruct model</span></div>
+        <p class="st-body">Now answers questions and follows instructions — but tone, safety, and "which answer is <em>better</em>" are still rough.</p>
+      </div>
+      <div class="flow-arrow" data-label="then"></div>
+      <div class="flow-step">
+        <div class="st-head"><span class="st-badge">Stage 3</span><span class="st-title">RLHF (alignment)</span></div>
+        <p class="st-body">Use human <em>preferences</em> to polish the model toward helpful, honest, harmless answers.</p>
+        <div class="io-row">
+          <span class="io-chip"><b>in:</b> humans ranking answers, "A vs B"</span>
+        </div>
+      </div>
+      <div class="flow-arrow" data-label="produces"></div>
+      <div class="flow-step output accent">
+        <div class="st-head"><span class="st-badge">Ship it</span><span class="st-title">Aligned assistant</span></div>
+        <p class="st-body">The Claude / ChatGPT you actually talk to.</p>
+      </div>
+    </div>
+    <figcaption class="fig-cap">Fig 1 — The three-stage LLM training pipeline. Each stage takes the previous model and improves a different thing: knowledge, then obedience, then judgement.</figcaption>
+  </figure>
+
+  <h2><span class="num">2</span>Stage 1 — Pre-training: where the knowledge comes from</h2>
+  <p>Pre-training is the giant, expensive stage that gives the model its raw
+  intelligence. The recipe is almost absurdly simple: take an enormous amount of
+  text — web pages, books, code, articles — and train the model to do the one thing
+  from Lesson 02: <strong>predict the next token</strong>. Do that across
+  <em>trillions</em> of tokens, and the model is forced to absorb grammar, facts,
+  writing styles, and reasoning patterns, because all of those help it guess the
+  next token more accurately.<a class="cite" href="#s1">1</a></p>
+
+  <p>The key buzzword here is <strong>self-supervised learning</strong>. Normally,
+  "supervised" training needs humans to label data ("this email = spam"). Pre-training
+  needs <em>zero</em> human labels, because the label is already sitting in the text:
+  the correct "next token" is simply the word that actually came next. The data
+  <em>labels itself</em>. That's the trick that let these models scale — there's an
+  ocean of unlabeled text, and it's all free training signal.</p>
+
+  <div class="callout note">
+    <span class="label">CS analogy</span>
+    <p>Think of pre-training like building a <strong>massive read-only cache of
+    the internet's patterns</strong>, compressed into the model's weights. It isn't
+    storing pages verbatim (it's not a database) — it's storing the <em>statistical
+    shape</em> of language and knowledge, the way a lossy compressor keeps the gist.</p>
+  </div>
+
+  <p>How does the model actually "learn" from a wrong guess? Through a
+  <strong>loss function</strong> — a single number scoring how wrong it was — and a
+  process that nudges the model's internal weights to make that number smaller next
+  time. You don't need the math, but seeing the idea once makes everything click:</p>
+
+  <div class="formula">
+    <span class="label">The pre-training objective (the gist)</span>
+    <p class="expr">loss  =  −log P(the token that actually came next)</p>
+    <p class="gloss"><strong>What it means:</strong> if the model gave the real next
+    token a high probability, <code>−log P</code> is small (good); if it gave it a
+    tiny probability, the loss is large (bad). It's a <em>surprise score</em>.
+    <strong>Why it's used:</strong> it converts "was the guess good?" into a number
+    you can automatically push downward. <strong>Where:</strong> computed on every
+    training example, in pre-training <em>and</em> fine-tuning. <strong>Analogy:</strong>
+    like a golf score — lower is better, and each round (batch of text) the model
+    tweaks its "swing" (weights) to shave a bit off. This tweaking is
+    <em>gradient descent</em>, a Phase-3 topic we'll keep purely intuitive.</p>
+  </div>
+
+  <p>The output of all this is a <strong>base model</strong> (also called a
+  <strong>foundation model</strong>). It's brilliant at continuing text but socially
+  clueless: ask a base model "What is the capital of France?" and it might reply with
+  a list of <em>more quiz questions</em>, because on the internet that string is often
+  followed by… more quiz questions. It has knowledge but no instinct to <em>help</em>.
+  That's the problem Stage 2 fixes.</p>
+
+  <h2><span class="num">3</span>Stage 2 — Supervised fine-tuning: teaching manners</h2>
+  <p><strong>Fine-tuning</strong> means taking an already-trained model and training
+  it a bit more on a new, targeted dataset — nudging its existing weights toward a
+  new behaviour without starting over. <strong>Supervised fine-tuning (SFT)</strong>,
+  also called <strong>instruction tuning</strong>, does exactly this using a curated
+  set of examples that look like the interaction we want:</p>
+
+  <div class="callout note">
+    <span class="label">What one SFT example looks like</span>
+    <p><b>Instruction:</b> "Explain photosynthesis to a 10-year-old."<br>
+    <b>Ideal response:</b> "Photosynthesis is how plants make their own food using
+    sunlight…" <em>(written by a human labeler)</em></p>
+  </div>
+
+  <p>Show the model tens of thousands of these high-quality demonstrations and it
+  learns the <em>format and habit</em> of being a helpful assistant: read an
+  instruction, produce a direct, useful answer. Note what SFT does and doesn't do —
+  it mostly teaches <strong>behaviour and style</strong>, not brand-new facts (the
+  facts came from pre-training). The result is an <strong>instruct model</strong>: it
+  follows instructions, but it doesn't yet have a fine sense of which of two decent
+  answers is <em>better</em>, or where the safety lines are. Humans are much better at
+  <em>judging</em> answers than at <em>writing</em> the perfect one every time — and
+  that insight is the whole reason for Stage 3.</p>
+
+  <h2><span class="num">4</span>Stage 3 — RLHF: learning from human preferences</h2>
+  <p><strong>RLHF</strong> stands for <strong>Reinforcement Learning from Human
+  Feedback</strong>, and it's the <strong>alignment</strong> stage — where the model
+  is shaped to be helpful, honest, and harmless, and to match the tone we want. It
+  works in two moves.<a class="cite" href="#s1">1</a></p>
+
+  <figure class="figure">
+    <div class="flow">
+      <div class="flow-step">
+        <div class="st-head"><span class="st-badge">Move 1</span><span class="st-title">Train a reward model</span></div>
+        <p class="st-body">The instruct model produces several answers to the same
+        prompt. A human labels <em>which answer is better</em> (a ranking, not a
+        rewrite). Collect many of these judgements and train a separate
+        <strong>reward model</strong> to predict the score a human would give any
+        answer.</p>
+        <div class="io-row">
+          <span class="io-chip"><b>in:</b> human "A is better than B" comparisons</span>
+          <span class="io-chip"><b>out:</b> a model that scores answers</span>
+        </div>
+      </div>
+      <div class="flow-arrow" data-label="then"></div>
+      <div class="flow-step accent">
+        <div class="st-head"><span class="st-badge">Move 2</span><span class="st-title">Optimise the LLM against that score</span></div>
+        <p class="st-body">The LLM answers prompts → the reward model scores each
+        answer → the LLM's weights are nudged to earn <em>higher</em> scores →
+        repeat, thousands of times. The algorithm that does the nudging is usually
+        <strong>PPO</strong> (Proximal Policy Optimization).</p>
+      </div>
+    </div>
+    <div class="loopnote">↻ Move 2 is a loop: generate → score → nudge → repeat</div>
+    <figcaption class="fig-cap">Fig 2 — RLHF in two moves: first bottle up human taste in a reward model, then let the LLM practise against it at machine speed.</figcaption>
+  </figure>
+
+  <p>Why the two-step dance? Because human feedback is slow and expensive. Instead of
+  a human grading millions of answers, humans grade a <em>sample</em>, that taste is
+  captured in the reward model, and then the LLM can practise against the reward model
+  millions of times with no human in the loop. It's a clever way to
+  <strong>scale human judgement</strong>.</p>
+
+  <div class="callout note">
+    <span class="label">Ties back to Phase 4 (Reinforcement Learning)</span>
+    <p>RLHF borrows RL's vocabulary, which you'll meet properly later. The LLM is the
+    <strong>policy</strong> (the thing choosing actions — here, tokens), the reward
+    model provides the <strong>reward</strong>, and PPO is the update rule. If those
+    words are fuzzy now, that's fine — just register that RLHF is where the roadmap's
+    "agent / reward / policy" ideas first show up in the LLM story.</p>
+  </div>
+
+  <p>One modern footnote you'll hear: <strong>DPO (Direct Preference Optimization)</strong>.
+  It reaches a similar destination as RLHF but skips building a separate reward model
+  and the fiddly RL loop, learning directly from the preference pairs. Many recent
+  models use DPO or its cousins because it's simpler and more stable. For now:
+  <em>RLHF and DPO are two roads to the same goal — aligning the model to human
+  preference.</em></p>
+
+  <h2><span class="num">5</span>Why this matters to you as an AI Engineer</h2>
+  <p>You will almost never pre-train (that's a big-lab, big-budget job), and you'll
+  fine-tune only occasionally. So why learn this? Because the pipeline
+  <em>explains the behaviour you'll build around every day</em>:</p>
+  <ul>
+    <li><strong>Why models are confidently wrong.</strong> Truth was never the
+    training target — <em>plausibility</em> was (Stage 1). Alignment reduces
+    hallucination but can't delete it.</li>
+    <li><strong>Why models have a "personality" and refuse some requests.</strong>
+    That's RLHF/alignment (Stage 3) doing its job.</li>
+    <li><strong>Why prompting works.</strong> SFT trained the model to take
+    instructions seriously — so how you phrase them genuinely steers it.</li>
+  </ul>
+
+  <p>And it sets up a decision you'll make constantly: to give a model new
+  information or behaviour, do you <strong>fine-tune</strong> it, or use
+  <strong>RAG</strong> (feed the info in at question-time)? A first-pass rule of
+  thumb, which we'll unpack in a later lesson:</p>
+
+  <div class="compare">
+    <div>
+      <h4>Fine-tuning</h4>
+      <ul>
+        <li>Best for <strong>behaviour, format, style, tone</strong>.</li>
+        <li>Bakes changes into the weights (permanent, needs retraining to update).</li>
+        <li>Costs training effort + data prep.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>RAG</h4>
+      <ul>
+        <li>Best for <strong>knowledge / facts</strong>, especially fresh or private data.</li>
+        <li>Info supplied at inference in the context window — easy to update.</li>
+        <li>No training; it's an engineering/retrieval problem (your wheelhouse).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="num">6</span>Buzzword recap</h2>
+  <p>Every term from this lesson, in one line each — if any is still fuzzy, that's a
+  perfect question to ask me.</p>
+  <div class="keywords">
+    <div class="kw"><b>Pre-training</b> — <span>the big self-supervised stage that gives the model its knowledge by predicting next tokens over massive text.</span></div>
+    <div class="kw"><b>Self-supervised</b> — <span>no human labels needed; the next token in the real text <em>is</em> the label.</span></div>
+    <div class="kw"><b>Base / foundation model</b> — <span>the pre-training output; knowledgeable but only autocompletes, doesn't follow instructions.</span></div>
+    <div class="kw"><b>Fine-tuning</b> — <span>extra training of an existing model on a targeted dataset to shift its behaviour.</span></div>
+    <div class="kw"><b>SFT / instruction tuning</b> — <span>fine-tuning on human <em>(instruction → answer)</em> demos to make an assistant that obeys.</span></div>
+    <div class="kw"><b>RLHF</b> — <span>Reinforcement Learning from Human Feedback; aligns the model using human preference rankings.</span></div>
+    <div class="kw"><b>Reward model</b> — <span>a model trained to predict which answers humans prefer, i.e. to score answers.</span></div>
+    <div class="kw"><b>PPO</b> — <span>Proximal Policy Optimization; the RL algorithm that nudges the LLM toward higher-reward answers.</span></div>
+    <div class="kw"><b>DPO</b> — <span>Direct Preference Optimization; a simpler modern alternative to the RLHF loop.</span></div>
+    <div class="kw"><b>Alignment</b> — <span>making the model's behaviour match human intent and values (helpful, honest, harmless).</span></div>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">7</span>Check yourself</h2>
+
+  <div class="quiz" data-answer="a">
+    <p class="qlabel">Retrieval 1 of 3</p>
+    <p class="q">What does the pre-training stage produce?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">A base model that predicts text</button>
+      <button class="opt" data-key="b">A safe assistant following every instruction</button>
+      <button class="opt" data-key="c">A reward model that ranks answers</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — pre-training yields a knowledgeable base (foundation) model that autocompletes but doesn't yet obey."
+       data-no="Not quite — pre-training produces the base model. Instruction-following comes from SFT; ranking comes from the reward model."></p>
+  </div>
+
+  <div class="quiz" data-answer="b">
+    <p class="qlabel">Retrieval 2 of 3</p>
+    <p class="q">"Self-supervised" pre-training means that…</p>
+    <div class="opts">
+      <button class="opt" data-key="a">humans label every training example first</button>
+      <button class="opt" data-key="b">the text itself provides the labels</button>
+      <button class="opt" data-key="c">the model trains without any data</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — the 'answer' is just the actual next token in the text, so no human labeling is needed. That's what let it scale."
+       data-no="Not quite — self-supervised means the next token in the real text serves as the label; no human labeling required."></p>
+  </div>
+
+  <div class="quiz" data-answer="a">
+    <p class="qlabel">Retrieval 3 of 3</p>
+    <p class="q">What is RLHF's main job?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">Aligns the model with human preferences</button>
+      <button class="opt" data-key="b">Teaches the model basic world knowledge</button>
+      <button class="opt" data-key="c">Splits the input text into tokens</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — RLHF uses human preference rankings (via a reward model) to align the model toward better answers."
+       data-no="Not quite — knowledge comes from pre-training and tokenizing is separate. RLHF aligns the model to human preferences."></p>
+  </div>
+
+  <div class="recall">
+    <p class="prompt">Recall (say it before revealing): name the three stages in order, and what each produces.</p>
+    <button class="reveal-btn" type="button">Show answer</button>
+    <div class="answer" hidden>
+      <strong>1. Pre-training</strong> → a <em>base/foundation model</em> (knowledge, autocomplete).
+      <strong>2. Supervised fine-tuning (SFT)</strong> → an <em>instruct model</em> (follows instructions).
+      <strong>3. RLHF</strong> (reward model + PPO, or DPO) → an <em>aligned assistant</em> (helpful, honest, harmless).
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="callout note">
+    <span class="label">Primary source — watch this</span>
+    <p><a href="https://www.youtube.com/watch?v=7xTGNNLPyMI" target="_blank" rel="noopener">“Deep Dive into LLMs like ChatGPT” — Andrej Karpathy</a>
+    walks this exact pipeline (pre-training, SFT, RLHF, hallucination) with superb
+    intuition. The sections on fine-tuning and RLHF are the perfect companion to
+    this lesson.</p>
+  </div>
+
+  <div class="ask">
+    💬 Strong follow-ups to ask me: "How is a reward model different from the LLM
+    itself?", "If DPO is simpler, why did RLHF come first?", or "When would <em>I</em>
+    ever fine-tune instead of using RAG?" — that last one is a real
+    AI-engineering judgement call.
+  </div>
+
+  <div class="lesson-foot">
+    <p class="sources"><strong>Sources</strong></p>
+    <ol class="sources">
+      <li id="s1">Andrej Karpathy — <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI" target="_blank" rel="noopener">Deep Dive into LLMs like ChatGPT</a> (pre-training, SFT, RLHF).</li>
+    </ol>
+
+    <div class="nav-row">
+      <a href="0004-inference-and-its-knobs.html">← Lesson 04 · Inference &amp; Its Knobs</a>
+      <span style="color:var(--muted);font-family:var(--mono);font-size:var(--t-small)">Next: RAG vs Fine-tuning, then Embeddings →</span>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/lesson.js"></script>
