@@ -1,0 +1,174 @@
+<title>Lesson 04 · Inference & Its Knobs</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/lesson.css">
+
+<div class="wrap">
+
+  <p class="kicker">AI Engineer <span class="dot">·</span> Phase 2 <span class="dot">·</span> Lesson 04</p>
+  <h1>Inference &amp; the Knobs You Control</h1>
+  <p class="lede">Training builds the model; <em>inference</em> is running it to get
+  output — and it's the part you actually touch. A handful of settings change how
+  the model behaves. Knowing them is the difference between fighting the model and
+  steering it.</p>
+
+  <div class="callout win">
+    <span class="label">Your win</span>
+    <p>You'll know the core inference settings — <strong>temperature, top-p, max
+    tokens, stop sequences</strong> — what each does, and which to reach for when.
+    This is your first real "control panel" as an AI Engineer.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">1</span>Inference vs training</h2>
+  <p><strong>Training</strong> is the expensive, one-time process of building the
+  model (the ML Engineer's and researcher's world). <strong>Inference</strong> is
+  every time you <em>use</em> the finished model to generate a response.<a class="cite" href="#s1">1</a>
+  As an AI Engineer you live almost entirely in inference — usually one API call
+  at a time.</p>
+
+  <h2><span class="num">2</span>Where the knobs act</h2>
+  <p>Recall from <a href="0002-what-is-an-llm.html">Lesson 02</a>: at each step the
+  model produces a <em>probability</em> for every possible next token. Something
+  has to <strong>pick one</strong>. That picking step — called
+  <strong>sampling</strong> — is exactly what the knobs tune.<a class="cite" href="#s2">2</a></p>
+
+  <h2><span class="num">3</span>The settings that matter</h2>
+
+  <h3>Temperature — the randomness dial</h3>
+  <p>The single most important knob. It controls how much the model gambles on
+  lower-probability tokens.<a class="cite" href="#s2">2</a></p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Temperature</th><th>Behaviour</th><th>Use for</th></tr></thead>
+    <tbody>
+      <tr><td>Low (0–0.3)</td><td>Focused, consistent, near-deterministic</td><td>Extraction, classification, code, factual answers</td></tr>
+      <tr><td>Medium (0.4–0.7)</td><td>Balanced</td><td>General chat, explanations</td></tr>
+      <tr><td>High (0.8–1.2)</td><td>Varied, creative, surprising</td><td>Brainstorming, fiction, marketing copy</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Rule of thumb: <strong>want one right answer → go low; want many different
+  ideas → go high.</strong></p>
+
+  <h3>Top-p (nucleus sampling) — the other randomness dial</h3>
+  <p>Instead of a temperature, top-p says "only consider the most likely tokens
+  whose probabilities add up to <em>p</em>" (e.g. 0.9). It's an alternative way to
+  control variety. <strong>Tune temperature <em>or</em> top-p, not both at once</strong>
+  — changing both makes results hard to reason about.<a class="cite" href="#s2">2</a></p>
+
+  <h3>Max tokens — the length cap</h3>
+  <p>The maximum number of tokens the model may <em>generate</em> in its reply. It
+  guards your cost and latency — but set it too low and the answer gets cut off
+  mid-sentence. Remember (Lesson 03): output tokens also count against the context
+  window.</p>
+
+  <h3>Stop sequences — the off-switch</h3>
+  <p>One or more strings that, when generated, make the model stop immediately.
+  Handy when you want output to end at a marker (e.g. stop at <code>\n\n</code> or
+  <code>END</code>) rather than run on.</p>
+
+  <div class="callout note">
+    <span class="label">You'll also meet</span>
+    <p><strong>Frequency</strong> and <strong>presence penalties</strong> — small
+    dials that discourage the model from repeating itself or push it toward new
+    topics. Nice to recognise; not worth memorising yet.</p>
+  </div>
+
+  <h2><span class="num">4</span>The one gotcha</h2>
+  <div class="callout watch">
+    <span class="label">"Temperature 0" is not a guarantee</span>
+    <p>Low temperature makes output <em>much</em> more consistent, but even at 0
+    you can't always assume byte-identical results across calls — hardware and
+    model-serving details introduce tiny variability. Design as if outputs
+    <em>may</em> vary; don't hard-code exact string matches on model output.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">5</span>Check yourself</h2>
+
+  <div class="quiz" data-answer="a">
+    <p class="qlabel">Retrieval 1 of 3</p>
+    <p class="q">To make answers more focused and repeatable, you should…</p>
+    <div class="opts">
+      <button class="opt" data-key="a">lower the temperature toward zero</button>
+      <button class="opt" data-key="b">raise the temperature toward one</button>
+      <button class="opt" data-key="c">increase the maximum output tokens</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — low temperature narrows the model to its highest-probability tokens: consistent, focused output."
+       data-no="Not quite — lowering the temperature toward zero makes output focused and repeatable. High temperature adds variety."></p>
+  </div>
+
+  <div class="quiz" data-answer="c">
+    <p class="qlabel">Retrieval 2 of 3</p>
+    <p class="q">What does the max-tokens setting control?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">how random the output tokens are</button>
+      <button class="opt" data-key="b">how large the training data was</button>
+      <button class="opt" data-key="c">how long the generated reply is</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — it caps output length (protecting cost and latency), but set too low it cuts the answer off."
+       data-no="Not quite — max tokens caps how long the generated reply can be, not its randomness or the training size."></p>
+  </div>
+
+  <div class="quiz" data-answer="b">
+    <p class="qlabel">Retrieval 3 of 3</p>
+    <p class="q">You're building a tool that extracts structured JSON. Best temperature?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">A high value, to cover edge cases</button>
+      <button class="opt" data-key="b">A low value, for consistent output</button>
+      <button class="opt" data-key="c">It makes no difference to extraction</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — extraction wants one correct, well-formed answer every time, so keep temperature low."
+       data-no="Not quite — structured extraction wants consistency, so a low temperature is the right call."></p>
+  </div>
+
+  <div class="recall">
+    <p class="prompt">Recall: name the four core inference knobs and, in a word each, what they do.</p>
+    <button class="reveal-btn" type="button">Show answer</button>
+    <div class="answer" hidden>
+      <strong>Temperature</strong> — randomness. <strong>Top-p</strong> — randomness
+      (alternative; don't combine with temperature). <strong>Max tokens</strong> —
+      reply length. <strong>Stop sequences</strong> — where to halt.
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="callout note">
+    <span class="label">Primary source</span>
+    <p><a href="https://www.promptingguide.ai/introduction/settings" target="_blank" rel="noopener">“LLM Settings” — Prompt Engineering Guide (DAIR.AI)</a>
+    is a tight, vendor-neutral rundown of these knobs. Then, when you make your
+    first API call, the <a href="https://docs.claude.com" target="_blank" rel="noopener">Claude</a>
+    or <a href="https://platform.openai.com/docs" target="_blank" rel="noopener">OpenAI</a>
+    docs show the exact parameter names.</p>
+  </div>
+
+  <div class="ask">
+    💬 You've now finished the LLM-foundations core — what an LLM is, tokens &amp;
+    context, and how to steer it. Ask me: "Can we do a hands-on API call next?"
+    When you're ready, that's Phase 7, and I'll ask which language + provider you'd
+    like to use.
+  </div>
+
+  <div class="lesson-foot">
+    <p class="sources"><strong>Sources</strong></p>
+    <ol class="sources">
+      <li id="s1">Chip Huyen — <a href="https://github.com/chiphuyen/aie-book" target="_blank" rel="noopener">AI Engineering</a> (training vs inference).</li>
+      <li id="s2">DAIR.AI — <a href="https://www.promptingguide.ai/introduction/settings" target="_blank" rel="noopener">Prompt Engineering Guide: LLM Settings</a>.</li>
+    </ol>
+
+    <div class="nav-row">
+      <a href="0003-tokens-and-context-windows.html">← Lesson 03 · Tokens &amp; the Context Window</a>
+      <span style="color:var(--muted);font-family:var(--mono);font-size:var(--t-small)">Next: how models are built — training, fine-tuning &amp; RLHF →</span>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/lesson.js"></script>

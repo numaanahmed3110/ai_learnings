@@ -19,6 +19,21 @@
 - Every lesson ends with: a retrieval check, a recommended primary source, and a
   nudge to ask the teacher (me) followup questions.
 
+## DEPTH + DIAGRAMS (user request, 2026-07-16) — important
+- User wants **richer, more detailed explanations**, not compressed one-line
+  textbook definitions. Explain *why* and *how*, build real intuition, use
+  concrete examples and analogies. "A solid edge / solid understanding."
+- **Include diagrams.** As topics get more complex, a diagram is often required,
+  not optional. Prefer **self-contained inline SVG or CSS diagrams** (they work
+  offline via file://, on Vercel, and print) over CDN-dependent libraries like
+  mermaid. Build reusable diagram components in `./assets/` (e.g. `diagrams.css`
+  or small SVG snippets) so lessons stay consistent.
+- Balance with the "short lesson" rule: depth ≠ bloat. Go deeper per concept, but
+  still one tight concept per lesson. Longer, well-structured prose + a diagram is
+  fine; rambling is not.
+- Lessons 1–4 (foundations) were approved as-is at basic depth. Apply the fuller
+  treatment from **Lesson 05 onward**, and retrofit earlier lessons on request.
+
 ## Hosting / deployment
 - Repo: `github.com/numaanahmed3110/ai_learnings` — **PUBLIC**, on branch `main`.
 - Deploy: **Vercel**, static site, Root Directory `./` (repo root). Auto-deploys

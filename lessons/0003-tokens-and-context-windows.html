@@ -1,0 +1,181 @@
+<title>Lesson 03 · Tokens & the Context Window</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/lesson.css">
+
+<div class="wrap">
+
+  <p class="kicker">AI Engineer <span class="dot">·</span> Phase 2 <span class="dot">·</span> Lesson 03</p>
+  <h1>Tokens &amp; the Context Window</h1>
+  <p class="lede">This is the most <em>practical</em> LLM concept you'll learn all
+  week. Tokens decide what you pay and what fits; the context window is the
+  model's entire working memory. Miss this and your apps break in confusing ways.</p>
+
+  <div class="callout win">
+    <span class="label">Your win</span>
+    <p>You'll be able to estimate token counts and cost, explain what a context
+    window is, and know <em>why</em> a chatbot "forgets" — three things you'll
+    reason about constantly as an AI Engineer.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">1</span>A token is not a word</h2>
+  <p>Last lesson we said an LLM predicts the next <strong>token</strong>. A token
+  is a <em>chunk</em> of text — usually a piece of a word, not a whole word.
+  Common words are often one token; longer or rarer words split into several;
+  spaces and punctuation count too.<a class="cite" href="#s1">1</a></p>
+
+  <div class="callout note">
+    <span class="label">Roughly, for English</span>
+    <p><strong>1 token ≈ 4 characters ≈ ¾ of a word.</strong><br>
+    So <strong>1,000 tokens ≈ 750 words</strong>, and a page of text is very
+    roughly 500 tokens. "cat" is 1 token; "unbelievable" might be 3–4.<a class="cite" href="#s1">1</a></p>
+  </div>
+
+  <p>You don't compute this by hand — but the rule of thumb lets you sanity-check
+  sizes and bills in your head.</p>
+
+  <h2><span class="num">2</span>Why tokens matter to <em>you</em></h2>
+  <ul>
+    <li><strong>Cost.</strong> Model APIs bill <em>per token</em> — both the
+    tokens you send (<strong>input</strong>) and the tokens it generates
+    (<strong>output</strong>), usually at different prices. A chatty prompt on a
+    million requests is real money.<a class="cite" href="#s2">2</a></li>
+    <li><strong>Limits.</strong> Every model has a maximum number of tokens it can
+    handle at once. Go over and you get an error or silently dropped text.</li>
+    <li><strong>Speed.</strong> More tokens = more compute = slower and pricier.
+    Trimming tokens is a core optimisation later (Phase 8).</li>
+  </ul>
+
+  <h2><span class="num">3</span>The context window = the model's RAM</h2>
+  <p>The <strong>context window</strong> is the maximum number of tokens a model
+  can consider at once — and it counts <strong>input + output together</strong>.
+  Think of it as the model's working memory, or RAM: everything it can "see" for
+  this one call has to fit inside it.<a class="cite" href="#s3">3</a></p>
+
+  <div class="nest">
+    <span class="layer-name" style="color:var(--ink-soft)">CONTEXT WINDOW (e.g. 200,000 tokens)</span>
+    <div class="inner">
+      <span class="core">system prompt + your instructions + retrieved docs + chat history + the model's reply — all must fit here</span>
+    </div>
+  </div>
+
+  <p>Modern windows are large (roughly 128K to 1M+ tokens depending on the model),
+  but they are never infinite — and the whole window is re-read on every single
+  call.</p>
+
+  <h2><span class="num">4</span>The consequence that trips up beginners</h2>
+  <div class="callout watch">
+    <span class="label">The model has no memory of its own</span>
+    <p>An LLM does <strong>not</strong> remember your previous messages. A chatbot
+    feels like it remembers only because the app <em>re-sends the earlier
+    conversation inside the context window every turn.</em> Memory is
+    <em>engineered</em>, not innate.<a class="cite" href="#s3">3</a></p>
+  </div>
+
+  <p>Two big engineering ideas fall straight out of this:</p>
+  <ul>
+    <li>A long document that doesn't fit must be split into <strong>chunks</strong>
+    and only the relevant pieces fed in — the seed of <strong>RAG</strong>
+    (retrieval-augmented generation), coming in Phase 7.</li>
+    <li>As a conversation grows, old turns must be summarised or dropped to stay
+    within the window — the seed of <strong>agent memory</strong>.</li>
+  </ul>
+
+  <h2><span class="num">5</span>Do this now — 2 minutes, hands-on</h2>
+  <div class="callout note">
+    <span class="label">See tokens with your own eyes</span>
+    <p>Open the <a href="https://platform.openai.com/tokenizer" target="_blank" rel="noopener">OpenAI Tokenizer</a>
+    and paste a sentence. Watch it split into coloured tokens. Try
+    <code>unbelievable</code>, a number like <code>1234567</code>, an emoji, and a
+    word in another language. Notice how token count ≠ word count. That felt sense
+    is what you're after.<a class="cite" href="#s1">1</a></p>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">6</span>Check yourself</h2>
+
+  <div class="quiz" data-answer="b">
+    <p class="qlabel">Retrieval 1 of 3</p>
+    <p class="q">Which best describes a token?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">Exactly one whole English word</button>
+      <button class="opt" data-key="b">A chunk of text, often sub-word</button>
+      <button class="opt" data-key="c">A single character of raw text</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — tokens are word-pieces. Common words may be one token; longer words split into several."
+       data-no="Not quite — a token is a chunk of text, usually a piece of a word — neither a full word nor a single character."></p>
+  </div>
+
+  <div class="quiz" data-answer="c">
+    <p class="qlabel">Retrieval 2 of 3</p>
+    <p class="q">The context window is the maximum number of tokens that…</p>
+    <div class="opts">
+      <button class="opt" data-key="a">the model can output in one reply</button>
+      <button class="opt" data-key="b">the model was originally trained on</button>
+      <button class="opt" data-key="c">the model can consider at once</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — input plus output combined, all of it re-read on every call. It's the model's working memory."
+       data-no="Not quite — the context window is the max tokens the model can consider at once (input + output together)."></p>
+  </div>
+
+  <div class="quiz" data-answer="a">
+    <p class="qlabel">Retrieval 3 of 3</p>
+    <p class="q">Why does a chatbot seem to remember earlier messages?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">The app resends them in the context</button>
+      <button class="opt" data-key="b">The model stores them in memory</button>
+      <button class="opt" data-key="c">The model was retrained after each reply</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — the model is stateless; the app re-feeds the prior conversation each turn. Memory is engineered."
+       data-no="Not quite — the model keeps nothing between calls. The app re-sends earlier messages inside the context each turn."></p>
+  </div>
+
+  <div class="recall">
+    <p class="prompt">Recall: about how many English words is 1,000 tokens — and why should you care?</p>
+    <button class="reveal-btn" type="button">Show answer</button>
+    <div class="answer" hidden>
+      About <strong>750 words</strong> (≈ 4 characters per token). You care because
+      APIs bill per token (input + output) and every model has a finite context
+      window — so token count drives both your cost and what actually fits.
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="callout note">
+    <span class="label">Primary source</span>
+    <p>Hands-on beats reading here: the <a href="https://platform.openai.com/tokenizer" target="_blank" rel="noopener">OpenAI Tokenizer</a>
+    tool. For the deeper "why," Karpathy's
+    <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI" target="_blank" rel="noopener">Deep Dive into LLMs</a>
+    has an excellent tokenization section.</p>
+  </div>
+
+  <div class="ask">
+    💬 Great follow-ups: "How do I count tokens in code before I send a request?"
+    or "If context windows are huge now, why still bother with RAG?" Ask me — the
+    second one is a genuine AI-engineering judgement call.
+  </div>
+
+  <div class="lesson-foot">
+    <p class="sources"><strong>Sources</strong></p>
+    <ol class="sources">
+      <li id="s1">OpenAI — <a href="https://platform.openai.com/tokenizer" target="_blank" rel="noopener">Tokenizer tool</a>; Karpathy — <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI" target="_blank" rel="noopener">Deep Dive into LLMs</a> (tokenization).</li>
+      <li id="s2">OpenAI — <a href="https://platform.openai.com/docs" target="_blank" rel="noopener">API docs</a> (token-based pricing).</li>
+      <li id="s3">Anthropic — <a href="https://docs.claude.com" target="_blank" rel="noopener">Claude developer docs</a> (context windows).</li>
+    </ol>
+
+    <div class="nav-row">
+      <a href="0002-what-is-an-llm.html">← Lesson 02 · What is an LLM?</a>
+      <a href="0004-inference-and-its-knobs.html">Lesson 04 · Inference &amp; Its Knobs →</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/lesson.js"></script>

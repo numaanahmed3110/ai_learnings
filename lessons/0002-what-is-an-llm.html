@@ -1,0 +1,180 @@
+<title>Lesson 02 · What is an LLM?</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/lesson.css">
+
+<div class="wrap">
+
+  <p class="kicker">AI Engineer <span class="dot">·</span> Phase 2 <span class="dot">·</span> Lesson 02</p>
+  <h1>What Is an LLM, Really?</h1>
+  <p class="lede">One mechanism sits underneath ChatGPT, Claude, Gemini, and every
+  tool you'll build. Grasp it and prompting, hallucination, and "context" all stop
+  being mysterious.</p>
+
+  <div class="callout win">
+    <span class="label">Your win</span>
+    <p>You'll be able to explain what a Large Language Model fundamentally
+    <em>does</em> in one sentence — and use that to predict why it hallucinates,
+    why prompting works, and why it still counts as "narrow" AI.</p>
+  </div>
+
+  <hr class="rule">
+
+  <h2><span class="num">1</span>The one-sentence truth</h2>
+  <p>Strip away the marketing and a <strong>Large Language Model (LLM)</strong> is
+  a machine that does exactly one thing:</p>
+
+  <div class="callout note">
+    <span class="label">The whole trick</span>
+    <p>Given some text, it <strong>predicts the next chunk of text</strong> —
+    then adds that chunk to the input and predicts again. And again. That loop is
+    the entire show.<a class="cite" href="#s1">1</a></p>
+  </div>
+
+  <p>Those "chunks" are called <strong>tokens</strong> (roughly, word-pieces —
+  we'll go deep on them next lesson). So more precisely: an LLM looks at the
+  tokens so far and produces a <em>probability</em> for every possible next token
+  — "the" 8%, "a" 5%, "cat" 0.1%, … — then one is picked, appended, and the
+  process repeats. Generating a paragraph is just this step run hundreds of times.
+  This repeated self-feeding is called <strong>autoregression</strong>.<a class="cite" href="#s2">2</a></p>
+
+  <div class="nest">
+    <span class="layer-name" style="color:var(--ink-soft)">"The cat sat on the ___"</span>
+    <div class="inner">
+      <span class="core">model reads the tokens → ranks every possible next token → picks "mat" → feeds it back → repeats</span>
+    </div>
+  </div>
+
+  <h2><span class="num">2</span>So where does the "intelligence" come from?</h2>
+  <p>Here's the surprising part. To predict the next token <em>well</em> across
+  billions of sentences — code, essays, dialogue, math — the model is forced to
+  internalise grammar, facts, styles, and reasoning patterns. Good prediction
+  <em>requires</em> a rich model of the world. Trained on a huge slice of the
+  internet, these abilities <strong>emerge</strong> from that one simple
+  objective.<a class="cite" href="#s1">1</a> Nobody hand-coded "grammar" — it fell
+  out of relentless next-token practice.</p>
+
+  <h2><span class="num">3</span>Three things this instantly explains</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Puzzle</th><th>Explained by "it predicts the next token"</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Why it <em>hallucinates</em></td>
+        <td>It generates <em>plausible-sounding</em> text, not verified facts. By default it isn't looking anything up — so it can produce confident, fluent, wrong answers.<a class="cite" href="#s1">1</a></td>
+      </tr>
+      <tr>
+        <td>Why <em>prompting</em> works</td>
+        <td>Your prompt <em>is</em> the text it predicts from. Better, clearer context steers the probabilities toward the answer you want.</td>
+      </tr>
+      <tr>
+        <td>Why it's still <em>narrow</em></td>
+        <td>It's a spectacular language pattern-predictor, not a general mind with goals or understanding. (Recall the levels from <a href="0001-the-ai-landscape.html">Lesson 01</a>.)</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout watch">
+    <span class="label">Mental model to keep</span>
+    <p>An LLM is <strong>autocomplete on steroids</strong> — a very, very good
+    next-token predictor. Powerful, but it has no built-in notion of "true." That
+    single fact will shape almost every engineering decision you make later
+    (evaluation, RAG, guardrails).</p>
+  </div>
+
+  <h2><span class="num">4</span>One nuance: base vs chat models</h2>
+  <p>A raw next-token predictor (a <strong>base model</strong>) just continues
+  text — hand it "Once upon a" and it rambles onward. The helpful, instruction-
+  following assistant you talk to (a <strong>chat / instruct model</strong>) is
+  that base model further shaped to follow instructions and stay helpful. <em>How</em>
+  that shaping works — pre-training, fine-tuning, RLHF — is a later lesson; for now
+  just know the assistant is a tamed version of the raw predictor.</p>
+
+  <hr class="rule">
+
+  <h2><span class="num">5</span>Check yourself</h2>
+
+  <div class="quiz" data-answer="b">
+    <p class="qlabel">Retrieval 1 of 3</p>
+    <p class="q">At its core, what does an LLM actually do?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">It searches a database for stored answers</button>
+      <button class="opt" data-key="b">It predicts the next token, repeatedly</button>
+      <button class="opt" data-key="c">It reasons using hand-written logical rules</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — predict a next token, append it, repeat. Everything else emerges from that loop."
+       data-no="Not quite — an LLM predicts the next token over and over. It isn't looking up stored answers by default."></p>
+  </div>
+
+  <div class="quiz" data-answer="c">
+    <p class="qlabel">Retrieval 2 of 3</p>
+    <p class="q">Why do LLMs sometimes "hallucinate" confidently wrong answers?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">Their training data was completely corrupted</button>
+      <button class="opt" data-key="b">They deliberately lie to save compute</button>
+      <button class="opt" data-key="c">They generate plausible text, not verified facts</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — it optimises for plausible-sounding continuations, with no built-in check on truth."
+       data-no="Not quite — hallucination comes from generating plausible text rather than looking up verified facts."></p>
+  </div>
+
+  <div class="quiz" data-answer="a">
+    <p class="qlabel">Retrieval 3 of 3</p>
+    <p class="q">In next-token terms, what is your prompt?</p>
+    <div class="opts">
+      <button class="opt" data-key="a">The context the model predicts from</button>
+      <button class="opt" data-key="b">A command the model must obey</button>
+      <button class="opt" data-key="c">A search query over the web</button>
+    </div>
+    <p class="feedback"
+       data-ok="Right — the prompt is the text it continues, so clearer context shifts the odds toward your answer."
+       data-no="Not quite — the prompt is the context it predicts from, not a literal command or a web search."></p>
+  </div>
+
+  <div class="recall">
+    <p class="prompt">Recall (say it before revealing): what is an LLM, in one sentence?</p>
+    <button class="reveal-btn" type="button">Show answer</button>
+    <div class="answer" hidden>
+      A Large Language Model is a system that, given some text, repeatedly predicts
+      the most likely next token — and from that one objective, grammar, facts, and
+      reasoning patterns emerge. It generates plausible language; it does not look
+      up truth.
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="callout note">
+    <span class="label">Primary source — watch this</span>
+    <p>The definitive beginner-friendly walkthrough:
+    <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI" target="_blank" rel="noopener">“Deep Dive into LLMs like ChatGPT” — Andrej Karpathy</a>.
+    It's 3.5 hours, but the <strong>first ~30 minutes</strong> cover exactly this
+    lesson's mechanism. Prefer visuals? Skim
+    <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noopener">“The Illustrated Transformer” — Jay Alammar</a>.</p>
+  </div>
+
+  <div class="ask">
+    💬 Questions that deepen this: "If it just predicts tokens, how can it do
+    math?" or "What's actually inside — is that the "transformer" I keep hearing
+    about?" Ask me — those are perfect next threads to pull.
+  </div>
+
+  <div class="lesson-foot">
+    <p class="sources"><strong>Sources</strong></p>
+    <ol class="sources">
+      <li id="s1">Andrej Karpathy — <a href="https://www.youtube.com/watch?v=7xTGNNLPyMI" target="_blank" rel="noopener">Deep Dive into LLMs like ChatGPT</a>.</li>
+      <li id="s2">Jay Alammar — <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noopener">The Illustrated Transformer</a>.</li>
+    </ol>
+
+    <div class="nav-row">
+      <a href="0001-the-ai-landscape.html">← Lesson 01 · The AI Landscape</a>
+      <a href="0003-tokens-and-context-windows.html">Lesson 03 · Tokens &amp; the Context Window →</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/lesson.js"></script>
